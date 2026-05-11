@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+<title>Carta Mágica - Tulipanes que Florecen 🌷 Feliz Día Mónica</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI', 'Poppins', system-ui, -apple-system, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg, #2d1b2e, #1a0f1a);
+    overflow-x:hidden;
+    padding:16px;
+    position:relative;
+}
+
+/* CONTENEDOR PRINCIPAL */
+.main-container{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    width:100%;
+    max-width:700px;
+}
+
+/* SOBRE (solo visible antes de abrir) */
+.envelope{
+    position:relative;
+    width:320px;
+    height:210px;
+    cursor:pointer;
+    perspective:1000px;
+    margin:10px auto;
+    transition:opacity 0.4s ease, transform 0.4s;
+}
+
+.envelope.hide-envelope{
+    opacity:0;
+    transform: scale(0.7);
+    pointer-events:none;
+}
+
+.base{
+    position:absolute;
+    width:100%;
+    height:100%;
+    background:linear-gradient(145deg, #e85d75, #c73b5c);
+    border-radius:0 0 20px 20px;
+    z-index:1;
+    overflow:hidden;
+    box-shadow:0 15px 30px rgba(0,0,0,.3);
+}
+
+.flap{
+    position:absolute;
+    width:100%;
+    height:100%;
+    background:linear-gradient(145deg, #ff6b8f, #dc4c72);
+    clip-path:polygon(0 0,50% 58%,100% 0);
+    transform-origin:top;
+    transition:transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index:5;
+    border-radius:6px 6px 0 0;
+}
+
+/* CARTA EXPANDIDA (inicialmente invisible) */
+.expanded-card{
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform: translate(-50%, -50%) scale(0.7);
+    width:92%;
+    max-width: 550px;
+    max-height: 88vh;
+    background: linear-gradient(135deg, #fffef7, #fff9f0);
+    border-radius: 40px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,160,100,0.3);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
+    z-index: 1000;
+    overflow-y: auto;
+    padding: 25px 20px 35px;
+    text-align: center;
+    -webkit-overflow-scrolling: touch;
+}
+
+.expanded-card.show-card{
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.expanded-card::-webkit-scrollbar{
+    width: 4px;
+}
+.expanded-card::-webkit-scrollbar-track{
+    background: #ffe0e8;
+    border-radius: 10px;
+}
+.expanded-card::-webkit-scrollbar-thumb{
+    background: #e85d75;
+    border-radius: 10px;
+}
+
+.expanded-card h1{
+    color:#dc4c72;
+    margin-bottom:8px;
+    font-size: 24px;
+    font-weight:800;
+}
+
+.expanded-card .subtitulo{
+    color:#b85c7e;
+    font-size:12px;
+    margin-bottom:18px;
+    font-style:italic;
+}
+
+.expanded-card p{
+    color:#4a2c38;
+    line-height:1.65;
+    margin-top:12px;
+    font-size:14px;
+}
+
+/* CONTENEDOR DE FLORES CON ANIMACIÓN */
+.flowers{
+    position:relative;
+    width:280px;
+    height:240px;
+    margin:10px auto 15px;
+}
+
+/* TALLOS */
+.stem{
+    position:absolute;
+    width:5px;
+    height:0px;
+    background:linear-gradient(180deg, #4caf50, #2e7d32);
+    bottom:5px;
+    border-radius:10px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.1);
+    transition: height 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
+    overflow:visible;
+}
+
+/* TULIPÁN - inicialmente escala 0 */
+.tulip{
+    position:absolute;
+    width:42px;
+    height:55px;
+    background:radial-gradient(ellipse at 30% 35%, #ff6b8f, #e8436a);
+    border-radius:55% 55% 40% 40%;
+    top:-38px;
+    left:-21px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+    transform: scale(0);
+    transition: transform 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
+    transform-origin: bottom center;
+}
+
+.tulip::before{
+    content:"";
+    position:absolute;
+    width:30px;
+    height:50px;
+    background:radial-gradient(ellipse at 30% 40%, #ff7f9f, #e84a72);
+    border-radius:55% 45% 50% 40%;
+    left:-10px;
+    top:-2px;
+    transform:rotate(-22deg);
+    opacity:0;
+    transition: opacity 0.3s ease 0.1s;
+}
+.tulip::after{
+    content:"";
+    position:absolute;
+    width:30px;
+    height:50px;
+    background:radial-gradient(ellipse at 70% 40%, #ff7f9f, #e84a72);
+    border-radius:45% 55% 40% 50%;
+    right:-10px;
+    top:-2px;
+    transform:rotate(22deg);
+    opacity:0;
+    transition: opacity 0.3s ease 0.15s;
+}
+.tulip .inner-petal{
+    position:absolute;
+    width:23px;
+    height:37px;
+    background:radial-gradient(ellipse at 50% 30%, #ffb0c3, #f05a7e);
+    border-radius:50% 50% 45% 45%;
+    left:9.5px;
+    top:4px;
+    z-index:2;
+    transform: scale(0);
+    transition: transform 0.3s ease 0.2s;
+}
+.tulip .tip{
+    position:absolute;
+    width:10px;
+    height:12px;
+    background:#ffd0da;
+    border-radius:50%;
+    top:-6px;
+    left:16px;
+    opacity:0;
+    z-index:3;
+    transition: opacity 0.25s ease 0.25s;
+}
+
+/* HOJAS */
+.leaf{
+    position:absolute;
+    width:22px;
+    height:12px;
+    background:linear-gradient(135deg, #66bb6a, #388e3c);
+    border-radius:100% 20% 100% 20%;
+    top:40px;
+    box-shadow:0 1px 4px rgba(0,0,0,0.1);
+    transform: scale(0);
+    transition: transform 0.35s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+.left-leaf{ left:-18px; transform-origin: right center; }
+.right-leaf{ right:-18px; transform-origin: left center; }
+.leaf-top{
+    position:absolute;
+    width:18px;
+    height:10px;
+    background:linear-gradient(135deg, #81c784, #43a047);
+    border-radius:90% 15% 90% 15%;
+    top:22px;
+    transform: scale(0);
+    transition: transform 0.3s ease 0.1s;
+}
+.left-leaf2{ left:-14px; transform-origin: right center; }
+.right-leaf2{ right:-14px; transform-origin: left center; }
+
+/* Clase de animación para cuando florecen */
+.flowers.animated .stem{
+    height: 90px;
+}
+.flowers.animated .stem5,
+.flowers.animated .stem6{
+    height: 76px;
+}
+.flowers.animated .stem7{
+    height: 98px;
+}
+.flowers.animated .tulip{
+    transform: scale(1);
+}
+.flowers.animated .tulip::before,
+.flowers.animated .tulip::after{
+    opacity: 1;
+}
+.flowers.animated .tulip .inner-petal{
+    transform: scale(1);
+}
+.flowers.animated .tulip .tip{
+    opacity: 0.7;
+}
+.flowers.animated .leaf{
+    transform: scale(1);
+}
+.flowers.animated .left-leaf{
+    transform: rotate(-35deg) scale(1);
+}
+.flowers.animated .right-leaf{
+    transform: rotate(130deg) scale(1);
+}
+.flowers.animated .leaf-top{
+    transform: scale(1);
+}
+.flowers.animated .left-leaf2{
+    transform: rotate(-50deg) scale(1);
+}
+.flowers.animated .right-leaf2{
+    transform: rotate(125deg) scale(1);
+}
+
+/* Posiciones */
+.stem1{ left: 35px; transform:rotate(-12deg); }
+.stem2{ left: 78px; transform:rotate(-5deg); }
+.stem3{ left: 121px; transform:rotate(2deg); }
+.stem4{ left: 164px; transform:rotate(10deg); }
+.stem5{ left: 52px; bottom:-8px; transform:rotate(-18deg); }
+.stem6{ left: 148px; bottom:-8px; transform:rotate(14deg); }
+.stem7{ left: 100px; transform:rotate(0deg); }
+
+/* Colores variados */
+.stem1 .tulip{ background:radial-gradient(ellipse at 30% 35%, #ff3f6b, #e62e5c); }
+.stem2 .tulip{ background:radial-gradient(ellipse at 30% 35%, #ff8f6b, #f0625a); }
+.stem3 .tulip{ background:radial-gradient(ellipse at 30% 35%, #ffb46b, #f0984a); }
+.stem4 .tulip{ background:radial-gradient(ellipse at 30% 35%, #e86f9e, #d44a7a); }
+.stem5 .tulip{ background:radial-gradient(ellipse at 30% 35%, #ff5f8f, #e8436a); }
+.stem6 .tulip{ background:radial-gradient(ellipse at 30% 35%, #f0a86e, #e57a4a); }
+.stem7 .tulip{ background:radial-gradient(ellipse at 30% 35%, #ff7c9e, #ec5a7a); }
+
+.stem1 .tulip .inner-petal{ background:radial-gradient(ellipse at 50% 30%, #ffa0bc, #ff5a82); }
+.stem2 .tulip .inner-petal{ background:radial-gradient(ellipse at 50% 30%, #ffc0a0, #ff8a62); }
+.stem3 .tulip .inner-petal{ background:radial-gradient(ellipse at 50% 30%, #ffe0a0, #ffb862); }
+.stem4 .tulip .inner-petal{ background:radial-gradient(ellipse at 50% 30%, #ffb0d0, #e86a9a); }
+.stem5 .tulip .inner-petal{ background:radial-gradient(ellipse at 50% 30%, #ffb0be, #f05e82); }
+.stem6 .tulip .inner-petal{ background:radial-gradient(ellipse at 50% 30%, #ffc8a0, #f09a62); }
+.stem7 .tulip .inner-petal{ background:radial-gradient(ellipse at 50% 30%, #ffb0cc, #ff6a8a); }
+
+/* Botón */
+.open-btn-container{
+    text-align: center;
+    margin-top: 16px;
+}
+
+.open-btn{
+    background: linear-gradient(135deg, #ff6b8f, #dc4c72);
+    border: none;
+    padding: 12px 28px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: white;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    font-family: inherit;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.open-btn:active{
+    transform: scale(0.96);
+}
+
+.hint-text{
+    text-align: center;
+    color: #ffb0c0;
+    font-size: 0.75rem;
+    margin-top: 12px;
+    opacity: 0.85;
+}
+
+/* Corazones flotantes */
+.heart{
+    position:fixed;
+    color:#ff4f87;
+    font-size:20px;
+    animation:float 3.5s ease-out forwards;
+    pointer-events:none;
+    z-index:2000;
+    filter:drop-shadow(0 0 4px rgba(255,80,120,0.5));
+}
+
+@keyframes float{
+    0%{
+        transform:translateY(0) scale(0.7);
+        opacity:1;
+    }
+    100%{
+        transform:translateY(-400px) scale(1.4);
+        opacity:0;
+    }
+}
+
+.close-card-btn{
+    position: absolute;
+    top: 15px;
+    right: 18px;
+    background: #e85d75;
+    color: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.close-card-btn:active{
+    transform: scale(0.92);
+    background: #c73b5c;
+}
+
+/* Ajustes para pantallas muy pequeñas */
+@media (max-width: 450px){
+    .envelope{
+        width: 280px;
+        height: 185px;
+    }
+    .flowers{
+        transform: scale(0.9);
+        margin: 5px auto;
+    }
+    .expanded-card{
+        padding: 20px 15px 30px;
+    }
+    .expanded-card h1{
+        font-size: 22px;
+    }
+    .open-btn{
+        padding: 10px 24px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Ajuste para Android específico (mejora el rendimiento de animaciones) */
+@media (pointer: coarse) {
+    .stem, .tulip, .leaf {
+        will-change: transform, height, opacity;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="envelope" id="envelope">
+        <div class="flap"></div>
+        <div class="base"></div>
+    </div>
+    <div class="open-btn-container">
+        <button class="open-btn" id="openBtn">
+            💌 Abrir carta especial 💌
+        </button>
+    </div>
+    <div class="hint-text">
+        🌷 Toca el botón y mira cómo florecen los tulipanes 🌷
+    </div>
+</div>
+
+<!-- CARTA EXPANDIDA -->
+<div class="expanded-card" id="expandedCard">
+    <button class="close-card-btn" id="closeCardBtn">✕</button>
+    <h1>🌷 Feliz Día de la Madre 🌷</h1>
+    <div class="subtitulo">✨ Para Mónica, con todo mi cariño ✨</div>
+
+    <div class="flowers" id="flowersContainer">
+        <div class="stem stem1">
+            <div class="tulip"><div class="inner-petal"></div><div class="tip"></div></div>
+            <div class="leaf left-leaf"></div><div class="leaf right-leaf"></div>
+            <div class="leaf-top left-leaf2"></div>
+        </div>
+        <div class="stem stem2">
+            <div class="tulip"><div class="inner-petal"></div><div class="tip"></div></div>
+            <div class="leaf left-leaf"></div><div class="leaf right-leaf"></div>
+        </div>
+        <div class="stem stem3">
+            <div class="tulip"><div class="inner-petal"></div><div class="tip"></div></div>
+            <div class="leaf left-leaf"></div><div class="leaf right-leaf"></div>
+            <div class="leaf-top right-leaf2"></div>
+        </div>
+        <div class="stem stem4">
+            <div class="tulip"><div class="inner-petal"></div><div class="tip"></div></div>
+            <div class="leaf left-leaf"></div><div class="leaf right-leaf"></div>
+        </div>
+        <div class="stem stem5">
+            <div class="tulip"><div class="inner-petal"></div><div class="tip"></div></div>
+            <div class="leaf left-leaf"></div><div class="leaf right-leaf"></div>
+        </div>
+        <div class="stem stem6">
+            <div class="tulip"><div class="inner-petal"></div><div class="tip"></div></div>
+            <div class="leaf left-leaf"></div><div class="leaf right-leaf"></div>
+            <div class="leaf-top left-leaf2"></div>
+        </div>
+        <div class="stem stem7">
+            <div class="tulip"><div class="inner-petal"></div><div class="tip"></div></div>
+            <div class="leaf left-leaf"></div><div class="leaf right-leaf"></div>
+        </div>
+    </div>
+
+    <p>
+        🌸 <strong>Mónica</strong>, gracias por ser una persona tan especial y por el cariño que me das.<br><br>
+        Gracias a ti tengo a <strong>tu hijo</strong> a mi lado, y eso es el mejor regalo que la vida me pudo dar.<br><br>
+        Te deseo un día lleno de amor, flores y mucha felicidad. <strong>¡Feliz Día de la Madre!</strong> 💖
+    </p>
+</div>
+
+<script>
+    (function() {
+        const envelope = document.getElementById('envelope');
+        const openBtn = document.getElementById('openBtn');
+        const expandedCard = document.getElementById('expandedCard');
+        const closeBtn = document.getElementById('closeCardBtn');
+        const flowersContainer = document.getElementById('flowersContainer');
+        let isOpened = false;
+
+        function animateFlowers() {
+            flowersContainer.classList.add('animated');
+            
+            const stems = document.querySelectorAll('.stem');
+            stems.forEach((stem, index) => {
+                stem.style.transitionDelay = `${index * 0.04}s`;
+            });
+            
+            const tulips = document.querySelectorAll('.tulip');
+            tulips.forEach((tulip, index) => {
+                tulip.style.transitionDelay = `${0.15 + index * 0.06}s`;
+            });
+        }
+
+        function createFloatingElements() {
+            // Corazones y flores flotantes
+            const count = 35;
+            const icons = ['💖', '💗', '💓', '🌸', '🌷', '💐', '✨', '🌹', '💕'];
+            
+            for(let i = 0; i < count; i++){
+                let element = document.createElement("div");
+                element.classList.add("heart");
+                element.innerHTML = icons[Math.floor(Math.random() * icons.length)];
+                element.style.left = Math.random() * window.innerWidth + "px";
+                element.style.top = (window.innerHeight - 40) + "px";
+                element.style.fontSize = (Math.random() * 22 + 14) + "px";
+                element.style.animationDelay = (Math.random() * 0.6) + "s";
+                document.body.appendChild(element);
+                setTimeout(() => {
+                    if(element && element.remove) element.remove();
+                }, 3800);
+            }
+            
+            // Pétalos adicionales
+            for(let i = 0; i < 18; i++){
+                let petal = document.createElement("div");
+                petal.innerHTML = "🌸";
+                petal.style.position = "fixed";
+                petal.style.left = Math.random() * window.innerWidth + "px";
+                petal.style.top = (window.innerHeight - 50) + "px";
+                petal.style.fontSize = (Math.random() * 16 + 10) + "px";
+                petal.style.opacity = "0.85";
+                petal.style.pointerEvents = "none";
+                petal.style.zIndex = "1999";
+                petal.style.transition = "all 2.8s ease-out";
+                document.body.appendChild(petal);
+                setTimeout(() => {
+                    petal.style.transform = `translateY(-${320 + Math.random() * 180}px) translateX(${(Math.random() - 0.5) * 120}px)`;
+                    petal.style.opacity = "0";
+                    setTimeout(() => petal.remove(), 2800);
+                }, 15);
+            }
+        }
+
+        function showCardWithAnimation() {
+            if(isOpened) return;
+            isOpened = true;
+
+            envelope.classList.add('hide-envelope');
+            expandedCard.classList.add('show-card');
+            
+            setTimeout(() => {
+                animateFlowers();
+                createFloatingElements();
+            }, 250);
+            
+            openBtn.innerHTML = "💖 ¡Carta abierta! 💖";
+            openBtn.style.opacity = "0.6";
+            openBtn.style.cursor = "default";
+            openBtn.disabled = true;
+        }
+
+        function closeCard() {
+            if(!isOpened) return;
+            expandedCard.classList.remove('show-card');
+            envelope.classList.remove('hide-envelope');
+            flowersContainer.classList.remove('animated');
+            
+            const stems = document.querySelectorAll('.stem');
+            stems.forEach(stem => {
+                stem.style.transitionDelay = '';
+            });
+            const tulips = document.querySelectorAll('.tulip');
+            tulips.forEach(tulip => {
+                tulip.style.transitionDelay = '';
+            });
+            
+            openBtn.innerHTML = "💌 Abrir carta especial 💌";
+            openBtn.style.opacity = "1";
+            openBtn.style.cursor = "pointer";
+            openBtn.disabled = false;
+            isOpened = false;
+        }
+
+        // Eventos táctiles optimizados para Android
+        openBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if(!isOpened) showCardWithAnimation();
+        });
+        
+        openBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if(!isOpened) showCardWithAnimation();
+        }, { passive: false });
+        
+        closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeCard();
+        });
+        
+        closeBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            closeCard();
+        }, { passive: false });
+        
+        expandedCard.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+        
+        // Evitar scroll del fondo cuando la carta está abierta
+        expandedCard.addEventListener('touchmove', (e) => {
+            e.stopPropagation();
+        }, { passive: false });
+    })();
+</script>
+</body>
+</html>
